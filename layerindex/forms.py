@@ -164,7 +164,7 @@ class EditProfileForm(forms.ModelForm):
 class ClassicRecipeForm(forms.ModelForm):
     class Meta:
         model = ClassicRecipe
-        fields = ('cover_layerbranch', 'cover_pn', 'cover_status', 'cover_verified', 'cover_comment', 'classic_category')
+        fields = ('cover_layerbranch', 'cover_pn', 'cover_status', 'cover_verified', 'cover_comment', 'classic_category', 'needs_attention')
 
 
 class AdvancedRecipeSearchForm(forms.Form):
@@ -215,6 +215,11 @@ class ClassicRecipeSearchForm(forms.Form):
         ('1', 'Has patches'),
         ('0', 'No patches'),
         ]
+    ATTENTION_CHOICES = [
+        ('', '(any)'),
+        ('1', 'Yes'),
+        ('0', 'No'),
+        ]
 
     q = forms.CharField(label='Keyword', max_length=255, required=False)
     category = forms.CharField(max_length=255, required=False)
@@ -222,4 +227,5 @@ class ClassicRecipeSearchForm(forms.Form):
     has_patches = forms.ChoiceField(label='Patches', choices=PATCH_CHOICES, required=False)
     cover_status = forms.ChoiceField(label='Status', choices=COVER_STATUS_CHOICES, required=False)
     cover_verified = forms.ChoiceField(label='Verified', choices=VERIFIED_CHOICES, required=False)
+    needs_attention = forms.ChoiceField(label='Needs attention', choices=ATTENTION_CHOICES, required=False)
 
