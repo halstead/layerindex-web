@@ -11,8 +11,14 @@ TODO:
 Bugs
 * Duplication of first maintainer when editing to add a second?
 * GitPython sometimes reports renamed files as type M but we don't handle that properly e.g. OE-Core 59285b324f6d9ed270b0bef209ef5da22a620a83 086308aa2a5e332de6f00ed397c4a55d132f158f
+* meta-tizen gives PathError in initial info gathering step
+* meta-debian seems to be prompting for github credentials during recipe parsing?
+* Remote patches in SRC_URI trigger errors
+* We're wasting time gathering layer info at the start for layers that have not changed
 
 Other
+* Use proper model to store inherits
+* Make dependency and inherits list items into search links
 * Full-text search on layer contents
 * Handle layers that have branch (e.g. master) that is empty
 * Add log in again link to logout page.
@@ -27,7 +33,6 @@ Other
 * Show layer type in layer detail?
 * Usage links in list page?
 * Subdirs in list page?
-* Query backend service i.e. special URL to query information for external apps/scripts
 * Add comparison to duplicates page
 * Create simple script to check for unlisted layer subdirectories in all repos
 * Auto-detect more values from github pages?
