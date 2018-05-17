@@ -1,41 +1,36 @@
 FROM buildpack-deps:latest
 MAINTAINER Michael Halstead <mhalstead@linuxfoundation.org>
 
-EXPOSE 80
 ENV PYTHONUNBUFFERED 1
+ENV LANG en_US.UTF-8
+ENV LC_ALL $LANG
+
 ## Uncomment to set proxy ENVVARS within container
 #ENV http_proxy http://your.proxy.server:port
 #ENV https_proxy https://your.proxy.server:port
 
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends \
-	python-pip \
-	python-mysqldb \
+        apt-utils \
+        locales \
 	python-dev \
+        python3-dev \
 	python-imaging \
-	python3-pip \
-	python3-mysqldb \
-	python3-dev \
-	python3-pil \
-	rabbitmq-server \
-	locales \
 	netcat-openbsd \
 	vim \
 	&& rm -rf /var/lib/apt/lists/*
-RUN sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen && locale-gen
-ENV LANG en_US.UTF-8
-RUN pip install --upgrade pip
-RUN pip install gunicorn
-RUN pip install setuptools
-RUN pip3 install setuptools
-RUN mkdir /opt/workdir
-COPY . /opt/layerindex
-RUN pip install -r /opt/layerindex/requirements.txt
+RUN echo $LANG UTF-8 > /etc/locale.gen \
+    && locale-gen && update-locale LANG=$LANG
+RUN curl -O https://bootstrap.pypa.io/get-pip.py \
+    && python3 get-pip.py && python2 get-pip.py && rm get-pip.py
+RUN pip3 install gunicorn
+RUN git clone --single-branch --branch paule/otherdistro https://git.yoctoproject.org/git/layerindex-web /opt/layerindex
 RUN pip3 install -r /opt/layerindex/requirements.txt
-COPY settings.py /opt/layerindex/settings.py
-COPY docker/updatelayers.sh /opt/updatelayers.sh
-COPY docker/migrate.sh /opt/migrate.sh
-COPY docker/start.sh /opt/start.sh
+RUN pip install -r /opt/layerindex/requirements.txt
+ADD docker/refreshlayers.sh /opt/refreshlayers.sh
+ADD docker/updatelayers.sh /opt/updatelayers.sh
+ADD docker/migrate.sh /opt/migrate.sh
+ADD docker/settings.py /opt/layerindex/settings.py
 
 ## Uncomment to add a .gitconfig file within container
 #ADD docker/.gitconfig /root/.gitconfig
@@ -43,7 +38,10 @@ COPY docker/start.sh /opt/start.sh
 ## do so, you will also have to edit .gitconfig appropriately
 #ADD docker/git-proxy /opt/bin/git-proxy
 
-# Run start script
+RUN mkdir /opt/workdir
+RUN adduser --system --uid=500 layers
+RUN chown -R layers /opt
+USER layers
 
-CMD ["/opt/start.sh"]
-
+# Start Gunicorn
+CMD ["/usr/local/bin/gunicorn", "wsgi:application", "--workers=4", "--bind=:5000", "--log-level=debug", "--chdir=/opt/layerindex"]
